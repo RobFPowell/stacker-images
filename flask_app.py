@@ -38,7 +38,7 @@ def csvRead():
 				if len(row[3]) > 0:
 					editUpload(row[3], imageList)
 			rowCount += 1
-		print imageList
+		# print imageList
 		return render_template("returnData.html", data=imageList)
 		# print imageList
 		# return ("<p>" + "</p><p>".join(imageList) + "</p>")
@@ -47,27 +47,32 @@ def csvRead():
 def editUpload (imageUrl, imageList):
 	try:
 		response = requests.get(imageUrl, stream=True).raw
+		print 'requested image'
 		im = Image.open(response)
+		print 'Image loaded'
 
 		blurred = im.filter(ImageFilter.GaussianBlur(25))
 		blurred = blurred.resize((1080, 770))
 
+		print "Blur worked"
 		if im.size[0] == im.size[1]:
 			newWidth = 770
 			newHeight = 770
 			im = im.resize((newWidth,newHeight))
-			offset = ((blurred.size[0] - newWidth) // 2, 0)
+			offset = (int((blurred.size[0] - newWidth) // 2), 0)
 		elif im.size[0] < im.size[1]:
-			newWidth = (770 / im.size[1]) * im.size[0]
+			newWidth = (770 / float(im.size[1])) * float(im.size[0])
 			newHeight = 770
 			im = im.resize((int(newWidth),newHeight))
-			offset = ((blurred.size[0] - newWidth) // 2, 0)
+			offset = (int((blurred.size[0] - int(newWidth)) // 2), 0)
 		else:
 			newWidth = 1080
-			newHeight = (1080 / im.size[0]) * im.size[1]
+			newHeight = (1080 / float(im.size[0])) * float(im.size[1])
 			im = im.resize((newWidth,int(newHeight)))
-			offset = (0, int((blurred.size[1] - newHeight) // 2))
+			offset = (0, int((blurred.size[1] - int(newHeight)) // 2))
 
+		print newWidth, newHeight
+		print offset
 		blurred.paste(im, offset)
 
 		blurred1 = StringIO()
@@ -91,9 +96,9 @@ def editUpload (imageUrl, imageList):
 		imageList.append('Error - ' + imageUrl)
 		# pass
 
-def uploadImage ():
-	filename = 'Your_Highness_Poster.jpg'
-	bucket_name = 'stacker-images'
-	s3.upload_file(filename, bucket_name, filename, ExtraArgs={'ACL':'public-read'})
-	fileUrl = 'https://s3.amazonaws.com/stacker-images/' + filename
+# def uploadImage ():
+# 	filename = 'Your_Highness_Poster.jpg'
+# 	bucket_name = 'stacker-images'
+# 	s3.upload_file(filename, bucket_name, filename, ExtraArgs={'ACL':'public-read'})
+# 	fileUrl = 'https://s3.amazonaws.com/stacker-images/' + filename
 
