@@ -1,6 +1,34 @@
 <h1><a href='/'>Stacker Images</a></h1>
 <br>
 <br>
-{% for item in data %}
+<!-- {% for item in data %}
     {{ item }} <br>
+{% endfor %} -->
+<br>
+<!-- {% for col1, col2 in data %}
+<tr>
+  <td>{{ col1 }}</td>
+</tr>
+{% endfor %} -->
+
+
+<div display="inline-block" width="600px">
+	{% for col1, col2 in data %}
+	  {{ col1 }}<br>
+	{% endfor %}
+</div>
+<br>
+<div display="inline-block" width="600px">
+	{% for col1, col2 in data %}
+	  {{ col2 }}<br>
+	{% endfor %}
+</div>
+
+<br>
+
+{% for col1, col2 in data %}
+<tr>
+  <td><img src="{{ col1 }}" width="600"></td>
+  <td><img src="{{ col2 }}" width="600"></td>
+</tr>
 {% endfor %}
