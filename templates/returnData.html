@@ -1,16 +1,6 @@
+<body>
 <h1><a href='/'>Stacker Images</a></h1>
 <br>
-<br>
-<!-- {% for item in data %}
-    {{ item }} <br>
-{% endfor %} -->
-<br>
-<!-- {% for col1, col2 in data %}
-<tr>
-  <td>{{ col1 }}</td>
-</tr>
-{% endfor %} -->
-
 
 <div display="inline-block" width="600px">
 	{% for col1, col2 in data %}
@@ -28,7 +18,16 @@
 
 {% for col1, col2 in data %}
 <tr>
-  <td><img src="{{ col1 }}" width="600"></td>
-  <td><img src="{{ col2 }}" width="600"></td>
+  <td><img src="{{ col1 }}" width="45%" onclick="addLink(this.src)"></td>
+  <td><img src="{{ col2 }}" width="45%" onclick="addLink(this.src)"></td>
 </tr>
 {% endfor %}
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+<script>
+function addLink(imageUrl) {
+    $("body").append(imageUrl + "<br>");
+}
+</script>

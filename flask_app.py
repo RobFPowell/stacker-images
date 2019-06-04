@@ -60,8 +60,10 @@ def editUpload (imageUrl, imageList, croppedImages):
 			newIm = imCrop.crop((crop,0,newWideWidth - crop,770))
 			# newImWide.show()
 
+
+		quality_val = 90
 		tempImage = StringIO()
-		newIm.save(tempImage, 'jpeg')
+		newIm.save(tempImage, 'jpeg', quality=quality_val)
 
 		filename = imageUrl.rsplit("/",1)[1]
 		bucket_name = 'stacker-images'
@@ -100,7 +102,7 @@ def editUpload (imageUrl, imageList, croppedImages):
 		blurred.paste(im, offset)
 
 		blurred1 = StringIO()
-		blurred.save(blurred1, 'jpeg')
+		blurred.save(blurred1, 'jpeg', quality=quality_val)
 
 		filename = imageUrl.rsplit("/",1)[1]
 		bucket_name = 'stacker-images'
