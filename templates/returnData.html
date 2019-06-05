@@ -15,13 +15,7 @@ img.addBorder {
 
 <div display="inline-block" width="600px">
 	{% for col1, col2, col3 in data %}
-	  {{ col1 }}<br>
-	{% endfor %}
-</div>
-<br>
-<div display="inline-block" width="600px">
-	{% for col1, col2, col3 in data %}
-	  {{ col2 }}<br>
+	  <div id="{{ col3 }}">{{ col1 }}</div>
 	{% endfor %}
 </div>
 
@@ -33,12 +27,7 @@ img.addBorder {
   <td><img src="{{ col2 }}" width="45%" imageCount="{{ col3 }}" class="{{ col3 }}" onclick="addLink(this)"></td>
 </tr>
 {% endfor %}
-<br>
-<div display="inline-block" width="600px">
-	{% for col1, col2, col3 in data %}
-	  <div id="{{ col3 }}">{{ col1 }}</div>
-	{% endfor %}
-</div>
+
 </body>
 
 </html>
