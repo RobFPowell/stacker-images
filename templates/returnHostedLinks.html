@@ -1,0 +1,20 @@
+<html>
+<head>
+<style type="text/css">
+</style>
+</head>
+
+<body>
+<h1><a href='/'>Stacker Images</a></h1>
+<br>
+
+<div display="inline-block" width="600px">
+	{% for col1 in data %}
+	  <div id="{{ col1 }}">{{ col1 }}</div>
+	{% endfor %}
+</div>
+
+
+</body>
+
+</html>

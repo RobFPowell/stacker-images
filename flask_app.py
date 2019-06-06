@@ -51,7 +51,7 @@ def csvRead():
 
 def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 	try:
-		response = requests.get(imageUrl, stream=True).raw
+		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
 
 		imCrop = Image.open(response)
 		if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]):
@@ -67,7 +67,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 
 		quality_val = 90
 		tempImage = StringIO()
-		newIm.save(tempImage, 'jpeg', quality=quality_val)
+		newIm.save(tempImage, 'jpeg')
 
 		filename = imageUrl.rsplit("/",1)[1]
 		bucket_name = 'stacker-images'
@@ -81,7 +81,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		print fileUrl
 		croppedImages.append(fileUrl)
 
-		response = requests.get(imageUrl, stream=True).raw
+		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
 
 		im = Image.open(response)
 		blurred = im.filter(ImageFilter.GaussianBlur(25))
@@ -106,7 +106,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		blurred.paste(im, offset)
 
 		blurred1 = StringIO()
-		blurred.save(blurred1, 'jpeg', quality=quality_val)
+		blurred.save(blurred1, 'jpeg')
 
 		filename = imageUrl.rsplit("/",1)[1]
 		bucket_name = 'stacker-images'
@@ -126,3 +126,31 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		imageList.append(imageUrl)
 		croppedImages.append(imageUrl)
 		imageCountList.append(imageCountList[-1]+1)
+
+
+@app.route('/hostImages', methods=['GET', 'POST'])
+def hostImages():
+	if request.method == 'POST':
+		imageList = []
+
+		uploadedFolder = request.files.getlist("imageFolder")
+		print uploadedFolder
+		if not file:
+			return "No file"
+		for uploadedFile in uploadedFolder:
+			print uploadedFile
+
+			blurred1 = StringIO()
+			uploadedFile.save(blurred1)
+			bucket_name = 'stacker-images'
+			s3.put_object(
+				Body=blurred1.getvalue(),
+				Bucket=bucket_name,
+				Key=uploadedFile.filename.rsplit("/",1)[1],
+				ACL='public-read'
+			)
+
+			imageList.append('https://s3.amazonaws.com/stacker-images/' + uploadedFile.filename.rsplit("/",1)[1])
+
+		return render_template("returnHostedLinks.html", data=imageList)
+
