@@ -11,6 +11,8 @@ import requests
 import csv
 import boto3
 
+import re
+
 app = Flask(__name__)
 s3 = boto3.client('s3')
 
@@ -46,13 +48,13 @@ def csvRead():
 
 		imageCountList.pop(0)
 		columnValues = zip(imageList, croppedImages, imageCountList)
+
 		return render_template("returnData.html", data=columnValues)
 
 
 def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 	try:
 		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
-
 		imCrop = Image.open(response)
 		if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]):
 			newHeightTall = int((1080 / float(imCrop.size[0])) * float(imCrop.size[1]))
@@ -69,7 +71,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		tempImage = StringIO()
 		newIm.save(tempImage, 'jpeg')
 
-		filename = imageUrl.rsplit("/",1)[1]
+		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1])
 		bucket_name = 'stacker-images'
 		s3.put_object(
 			Body=tempImage.getvalue(),
@@ -108,7 +110,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		blurred1 = StringIO()
 		blurred.save(blurred1, 'jpeg')
 
-		filename = imageUrl.rsplit("/",1)[1]
+		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1])
 		bucket_name = 'stacker-images'
 		s3.put_object(
 			Body=blurred1.getvalue(),
@@ -146,11 +148,11 @@ def hostImages():
 			s3.put_object(
 				Body=blurred1.getvalue(),
 				Bucket=bucket_name,
-				Key=uploadedFile.filename.rsplit("/",1)[1],
+				Key=re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]),
 				ACL='public-read'
 			)
 
-			imageList.append('https://s3.amazonaws.com/stacker-images/' + uploadedFile.filename.rsplit("/",1)[1])
+			imageList.append('https://s3.amazonaws.com/stacker-images/' + re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]))
 
 		return render_template("returnHostedLinks.html", data=imageList)
 
