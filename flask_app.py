@@ -56,6 +56,8 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 	try:
 		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
 		imCrop = Image.open(response)
+		imageFormat = im.format
+
 		if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]):
 			newHeightTall = int((1080 / float(imCrop.size[0])) * float(imCrop.size[1]))
 			crop = int((newHeightTall - 770)/2)
@@ -69,7 +71,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 
 		quality_val = 90
 		tempImage = StringIO()
-		if imCrop.format == 'PNG':
+		if imageFormat == 'PNG':
 			newIm.save(tempImage, 'png')
 		else:
 			newIm.save(tempImage, 'jpeg')
@@ -110,7 +112,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 
 		blurred.paste(im, offset)
 		blurred1 = StringIO()
-		if im.format == 'PNG':
+		if imageFormat == 'PNG':
 			blurred.save(blurred1, 'png')
 		else:
 			blurred.save(blurred1, 'jpeg')
