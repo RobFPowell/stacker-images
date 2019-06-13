@@ -56,7 +56,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 	try:
 		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
 		imCrop = Image.open(response)
-		imageFormat = im.format
+		imageFormat = imCrop.format
 
 		if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]):
 			newHeightTall = int((1080 / float(imCrop.size[0])) * float(imCrop.size[1]))
