@@ -69,9 +69,12 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 
 		quality_val = 90
 		tempImage = StringIO()
-		newIm.save(tempImage, 'jpeg')
+		if imCrop.format == 'PNG':
+			newIm.save(tempImage, 'png')
+		else:
+			newIm.save(tempImage, 'jpeg')
 
-		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1])
+		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_")
 		bucket_name = 'stacker-images'
 		s3.put_object(
 			Body=tempImage.getvalue(),
@@ -106,11 +109,13 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 			offset = (0, int((blurred.size[1] - int(newHeight)) // 2))
 
 		blurred.paste(im, offset)
-
 		blurred1 = StringIO()
-		blurred.save(blurred1, 'jpeg')
+		if im.format == 'PNG':
+			blurred.save(blurred1, 'png')
+		else:
+			blurred.save(blurred1, 'jpeg')
 
-		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1])
+		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_")
 		bucket_name = 'stacker-images'
 		s3.put_object(
 			Body=blurred1.getvalue(),
@@ -148,11 +153,11 @@ def hostImages():
 			s3.put_object(
 				Body=blurred1.getvalue(),
 				Bucket=bucket_name,
-				Key=re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]),
+				Key=re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]).replace(" ", "_"),
 				ACL='public-read'
 			)
 
-			imageList.append('https://s3.amazonaws.com/stacker-images/' + re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]))
+			imageList.append('https://s3.amazonaws.com/stacker-images/' + re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]).replace(" ", "_"))
 
 		return render_template("returnHostedLinks.html", data=imageList)
 
