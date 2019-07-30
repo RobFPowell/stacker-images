@@ -147,19 +147,20 @@ def hostImages():
 		if not file:
 			return "No file"
 		for uploadedFile in uploadedFolder:
-			print uploadedFile
+			print uploadedFile.filename
 
 			blurred1 = StringIO()
 			uploadedFile.save(blurred1)
 			bucket_name = 'stacker-images'
+			fileKey = re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename).replace(" ", "_").replace("/", "_")
 			s3.put_object(
 				Body=blurred1.getvalue(),
 				Bucket=bucket_name,
-				Key=re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]).replace(" ", "_"),
+				Key=fileKey,
 				ACL='public-read'
 			)
 
-			imageList.append('https://s3.amazonaws.com/stacker-images/' + re.sub('[^a-zA-Z0-9 \n\.]', '', uploadedFile.filename.rsplit("/",1)[1]).replace(" ", "_"))
+			imageList.append('https://s3.amazonaws.com/stacker-images/' + fileKey)
 
 		return render_template("returnHostedLinks.html", data=imageList)
 
