@@ -1,15 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Page Title</title>
+<title>PhotoStack</title>
+<style type="text/css">
+body{font-family: 'Fontawesome','Overpass',sans-serif,arial;}
+h1, h2, h3 {
+	padding: 0px;
+	margin: 10px;
+}
+#urlInput {
+	margin-right: 105px;
+}
+</style>
 </head>
 <body>
 	<h1>Stacker Images</h1>
 
 	<h2>Image Editing</h2>
+	<h3>CSV:</h3>
 	<form action="/csvRead" method="POST" enctype="multipart/form-data">
 		<input type="file" name="pic">
 		<input type="submit">
+	</form>
+	<h3>Single File:</h3>
+	<form action="/urlRead" method="POST">
+		<input type="text" name="enterUrl" placeholder="Enter URL" id="urlInput">
+		<input type="submit" value="Submit">
 	</form>
 	<p>
 		The Image Editor allows users to upload a list of image URLs and automatically apply edits to fit Stacker's image format.<br><br>
@@ -25,17 +41,19 @@
 
 		* Any missing images or image URLs not in the correct format will produce an "Error" message for that image.<br>
 	</p>
-	<img src="https://s3.amazonaws.com/stacker-images/Dam_Panorama_FB.jpg" width="45%">
-	<img src="https://s3.amazonaws.com/stacker-images/croppedDam_Panorama_FB.jpg" width="45%">
+	<img src="https://s3.amazonaws.com/stacker-images/Dam_Panorama_FB.jpg" width="350px">
+	<img src="https://s3.amazonaws.com/stacker-images/croppedDam_Panorama_FB.jpg" width="350px">
 
 	<br>
 	<h2>Image Uploading</h2>
+	<h3>Folder Upload:</h3>
 	<form action="/hostImages" method="POST" enctype="multipart/form-data">
 		<input type="file" name="imageFolder" multiple webkitdirectory>
 		<input type="submit">
-	</form><br>
+	</form>
+	<h3>Single File Upload:</h3>
 	<form action="/hostImages" method="POST" enctype="multipart/form-data">
-		<input type="file" name="imageFolder" >
+		<input type="file" name="imageFolder">
 		<input type="submit">
 	</form>
 	<p>

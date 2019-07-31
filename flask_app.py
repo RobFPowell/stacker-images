@@ -52,6 +52,21 @@ def csvRead():
 		return render_template("returnData.html", data=columnValues)
 
 
+@app.route('/urlRead', methods=['GET', 'POST'])
+def urlRead():
+	if request.method == 'POST':
+		text = request.form['enterUrl']
+		imageList = []
+		croppedImages = []
+		imageCount = 0
+		imageCountList = [0]
+		editUpload(text, imageList, croppedImages, imageCountList, imageCount)
+
+		columnValues = zip(imageList, croppedImages, imageCountList)
+
+		return render_template("returnData.html", data=columnValues)
+
+
 def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 	try:
 		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
@@ -76,7 +91,8 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		else:
 			newIm.save(tempImage, 'jpeg')
 
-		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_")
+		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_").replace(".", "") + "." + imageFormat
+		print filename
 		bucket_name = 'stacker-images'
 		s3.put_object(
 			Body=tempImage.getvalue(),
@@ -117,7 +133,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		else:
 			blurred.save(blurred1, 'jpeg')
 
-		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_")
+		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_").replace(".", "") + "." + imageFormat
 		bucket_name = 'stacker-images'
 		s3.put_object(
 			Body=blurred1.getvalue(),
