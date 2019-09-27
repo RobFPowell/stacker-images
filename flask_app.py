@@ -12,6 +12,7 @@ import csv
 import boto3
 
 import re
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 s3 = boto3.client('s3')
@@ -84,12 +85,12 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 			imCrop = imCrop.resize((newWideWidth, 770))
 			newIm = imCrop.crop((crop,0,newWideWidth - crop,770))
 
-		quality_val = 90
+		quality = 95
 		tempImage = StringIO()
 		if imageFormat == 'PNG':
-			newIm.save(tempImage, 'png')
+			newIm.save(tempImage, 'png', quality=quality)
 		else:
-			newIm.save(tempImage, 'jpeg')
+			newIm.save(tempImage, 'jpeg', quality=quality)
 
 		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_").replace(".", "") + "." + imageFormat
 		print filename
@@ -129,9 +130,9 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		blurred.paste(im, offset)
 		blurred1 = StringIO()
 		if imageFormat == 'PNG':
-			blurred.save(blurred1, 'png')
+			blurred.save(blurred1, 'png', quality=quality)
 		else:
-			blurred.save(blurred1, 'jpeg')
+			blurred.save(blurred1, 'jpeg', quality=quality)
 
 		filename = re.sub('[^a-zA-Z0-9 \n\.]', '', imageUrl.rsplit("/",1)[1]).replace(" ", "_").replace(".", "") + "." + imageFormat
 		bucket_name = 'stacker-images'
@@ -179,4 +180,29 @@ def hostImages():
 			imageList.append('https://s3.amazonaws.com/stacker-images/' + fileKey)
 
 		return render_template("returnHostedLinks.html", data=imageList)
+
+
+@app.route('/storyPreview', methods=['GET', 'POST'])
+def storyPreview():
+	if request.method == 'POST':
+		storyUrl = request.form['enterUrl']
+		# storyUrl = 'https://thestacker.com/stories/1771/polar-bears-and-50-other-species-threatened-climate-change#11'
+		slideNumber = int(storyUrl.split('#')[1]) - 1
+
+		r = requests.get(storyUrl, headers={'User-Agent': 'Mozilla/5.0'})
+		storySoup = BeautifulSoup(r.text)
+
+		storyName = storySoup.find('h1').text.strip()
+
+		slideArea = storySoup.find('div', class_="slide--"+ str(slideNumber))
+		imageAttribution = slideArea.find('div', class_='views-field-field-image-attribution').text
+		slideTitle = slideArea.find('div', class_='views-field-field-slide-caption').text
+		slideBody = slideArea.find('div', class_='views-field-field-slide-description').text
+		slideImage = slideArea.find('img')['src']
+
+		print storyName, slideTitle, slideBody, slideImage
+
+		previewHTML = '<div  class="card" style="width:300px;height:450px;overflow:scroll;margin:10px;margin-bottom:0px;padding:0px;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);transition: 0.3s;border-radius: 5px;position: relative;"> <img class="card-image slideImage" src="https://thestacker.com' + slideImage + '" style="height: 215px;border-radius: 5px 5px 0 0;"> <div class="card-title-box" style="background: #15133F;color: white;width: 100%;height: 45px;opacity: 0.7;position: absolute;top: 170px;"><div class="card-title" style="padding-left: 10px;padding-right: 10px;font-size: 16px;line-height: 1.4;opacity: 1;text-align: center;font-weight: bold;">' + storyName + '</div></div><div class="slideContent" style="padding: 0px;margin: 0px;padding: 10px;padding-top: 5px;padding-bottom: 0px;font-size: 15px;color: black;text-align: justify;opacity: 1;line-height: 1.5;"><div class="slideTitle" style="font-weight:bold;padding-bottom: 0px;">' + slideTitle + ' </div>' + slideBody + ' <div style="position:relative;bottom:0px;text-align:center;padding:0px;height:30px;background-color:white"><hr class="readLinkLine" style="padding:0px"><a class="readLink" href="' + storyUrl + '" style="color: #ff9933;text-decoration: none;padding: 0px;padding-bottom: 10px;font-size: 15px;">Read at Stacker</a></div> </div>'
+
+		return render_template("storyPreview.html", data=previewHTML)
 
