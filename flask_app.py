@@ -108,7 +108,7 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
 
 		im = Image.open(response)
-		blurred = im.filter(ImageFilter.GaussianBlur(25))
+		blurred = im.filter(ImageFilter.GaussianBlur(200))
 		blurred = blurred.resize((1080, 770))
 
 		if im.size[0] == im.size[1]:
@@ -200,7 +200,7 @@ def storyPreview():
 		slideBody = str(slideArea.find('div', class_='views-field-field-slide-description').contents[0]).decode('utf-8')
 		slideImage = slideArea.find('img')['src']
 
-		previewHTML = '<div  class="card" style="width:300px;height:450px;overflow:scroll;margin:10px;margin-bottom:0px;padding:0px;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);transition: 0.3s;border-radius: 5px;position: relative;"> <img class="card-image slideImage" src="https://thestacker.com' + slideImage + '" style="height: 215px;border-radius: 5px 5px 0 0;"> <div class="card-title-box" style="background: #15133F;color: white;width: 100%;height: 45px;opacity: 0.7;position: absolute;top: 170px;"><div class="card-title" style="padding-left: 10px;padding-right: 10px;font-size: 16px;line-height: 1.4;opacity: 1;text-align: center;font-weight: bold;">' + storyName + '</div></div><div class="slideContent" style="padding: 0px;margin: 0px;padding: 10px;padding-top: 5px;padding-bottom: 0px;font-size: 15px;color: black;text-align: justify;opacity: 1;line-height: 1.5;"><div class="slideTitle" style="font-weight:bold;padding-bottom: 0px;">' + slideTitle + ' </div>' + slideBody + ' <div style="position:relative;bottom:0px;text-align:center;padding:0px;height:30px;background-color:white"><hr class="readLinkLine" style="padding:0px"><a class="readLink" href="' + storyUrl + '" style="color: #ff9933;text-decoration: none;padding: 0px;padding-bottom: 10px;font-size: 15px;">Read at Stacker</a></div> </div>'
+		previewHTML = '<div  class="card" style="width:300px;height:450px;overflow:scroll;margin:10px;margin-bottom:0px;padding:0px;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);transition: 0.3s;border-radius: 5px;position: relative;"> <img class="card-image slideImage" src="https://thestacker.com' + slideImage + '" style="height: 215px;border-radius: 5px 5px 0 0;"> <div class="card-title-box" style="background: #15133F;color: white;width: 100%;height: 45px;opacity: 0.7;position: absolute;top: 170px;"><div class="card-title" style="padding-left: 10px;padding-right: 10px;font-size: 16px;line-height: 1.4;opacity: 1;text-align: center;font-weight: bold;">' + storyName + '</div></div><div class="slideContent" style="padding: 0px;margin: 0px;padding: 10px;padding-top: 5px;padding-bottom: 0px;font-size: 15px;color: black;text-align: left;opacity: 1;line-height: 1.5;"><div class="slideTitle" style="font-weight:bold;padding-bottom: 0px;">' + slideTitle + ' </div>' + slideBody + ' <div style="position:relative;bottom:0px;text-align:center;padding:0px;height:30px;background-color:white"><hr class="readLinkLine" style="padding:0px"><a class="readLink" href="' + storyUrl + '" style="color: #144899;text-decoration: none;padding: 0px;padding-bottom: 10px;font-size: 15px;font-weight: bold;">Read at Stacker</a></div> </div>'
 
 		return render_template("storyPreview.html", data=previewHTML)
 
