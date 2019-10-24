@@ -30,6 +30,8 @@ def csvRead():
 		croppedImages = []
 		imageCountList = [0]
 		imageCount = 1
+		imageSizes = []
+		imageClasses = []
 
 		file = request.files['pic']
 		if not file:
@@ -42,15 +44,17 @@ def csvRead():
 		for row in csv_input:
 			if rowCount > 0:
 				if len(row[0]) > 0:
-					editUpload(row[0], imageList, croppedImages, imageCountList, imageCount)
+					editUpload(row[0], imageList, croppedImages, imageCountList, imageCount, imageSizes, imageClasses)
 				else:
 					imageList.append("No image")
 					croppedImages.append("No image")
 					imageCountList.append(imageCountList[-1]+1)
+					imageSizes.append('No image')
+					imageClasses.append('flagImage')
 			rowCount += 1
 
 		imageCountList.pop(0)
-		columnValues = zip(imageList, croppedImages, imageCountList)
+		columnValues = zip(imageList, croppedImages, imageCountList, imageSizes, imageClasses)
 
 		return render_template("returnData.html", data=columnValues)
 
@@ -63,18 +67,25 @@ def urlRead():
 		croppedImages = []
 		imageCount = 0
 		imageCountList = [0]
-		editUpload(text, imageList, croppedImages, imageCountList, imageCount)
+		imageSizes = []
+		imageClasses = []
+		editUpload(text, imageList, croppedImages, imageCountList, imageCount, imageSizes, imageClasses)
 
-		columnValues = zip(imageList, croppedImages, imageCountList)
+		columnValues = zip(imageList, croppedImages, imageCountList, imageSizes, imageClasses)
 
 		return render_template("returnData.html", data=columnValues)
 
 
-def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
+def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount, imageSizes, imageClasses):
 	try:
 		response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
 		imCrop = Image.open(response)
 		imageFormat = imCrop.format
+		imageSize = str(imCrop.size[0]) + " x " + str(imCrop.size[1])
+		if (imCrop.size[0] < 1080 or imCrop.size[1] < 770):
+			imageClass = 'flagImage'
+		else:
+			imageClass = ''
 
 		if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]):
 			newHeightTall = int((1080 / float(imCrop.size[0])) * float(imCrop.size[1]))
@@ -148,13 +159,19 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount):
 		print fileUrl
 		imageList.append(fileUrl)
 		imageCountList.append(imageCountList[-1]+1)
+		imageSizes.append(imageSize)
+		imageClasses.append(imageClass)
 
 	except:
 		print 'Error - ' + imageUrl
 		imageList.append(imageUrl)
 		croppedImages.append(imageUrl)
 		imageCountList.append(imageCountList[-1]+1)
-
+		imageClasses.append('flagImage')
+		try:
+			imageSizes.append(imageSize)
+		except:
+			imageSizes.append("Not available")
 
 @app.route('/hostImages', methods=['GET', 'POST'])
 def hostImages():
@@ -206,7 +223,7 @@ def storyPreview():
 		slideBody = str(slideArea.find('div', class_='views-field-field-slide-description').contents[0]).decode('utf-8')
 		slideImage = slideArea.find('img')['src']
 
-		previewHTML = '<div class="card" style="width:300px;height:450px;overflow:scroll;margin:10px;margin-bottom:0px;padding:0px;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);transition: 0.3s;border-radius: 5px;position: relative;"> <img class="card-image slideImage" src="https://thestacker.com' + slideImage + '" style="height: 215px;border-radius: 5px 5px 0 0;"> <div class="card-title-box" style="background: #15133F;color: white;width: 100%;height: 45px;opacity: 0.7;position: absolute;top: 170px;"><div class="card-title" style="padding-left: 10px;padding-right: 10px;font-size: 16px;line-height: 1.4;opacity: 1;text-align: center;font-weight: bold;">' + storyName + '</div></div><div class="slideContent" style="padding: 0px;margin: 0px;padding: 10px;padding-top: 5px;padding-bottom: 0px;font-size: 15px;color: black;text-align: left;opacity: 1;line-height: 1.5;"><div class="slideTitle" style="font-weight:bold;padding-bottom: 0px;">' + slideTitle + ' </div>' + slideBody + ' <div style="position:relative;bottom:0px;text-align:center;padding:0px;height:30px;background-color:white"><hr class="readLinkLine" style="padding:0px"><a class="readLink" href="' + storyUrl + '" style="color: #144899;text-decoration: none;padding: 0px;padding-bottom: 10px;font-size: 15px;font-weight: bold;">Read at Stacker</a></div> </div>'
+		previewHTML = '<div class="card" style="width:300px;height:450px;overflow:scroll;margin:10px;margin-bottom:0px;padding:0px;box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);transition: 0.3s;border-radius: 5px;position: relative;"> <img class="card-image slideImage" src="https://thestacker.com' + slideImage + '" style="height: 215px;border-radius: 5px 5px 0 0;"> <div class="card-title-box" style="background: #15133F;color: white;width: 100%;height: 45px;opacity: 0.7;position: absolute;top: 170px;"><div class="card-title" style="padding-left: 10px;padding-right: 10px;font-size: 14px;line-height: 1.4;opacity: 1;text-align: center;font-weight: bold;">' + storyName + '</div></div><div class="slideContent" style="padding: 0px;margin: 0px;padding: 10px;padding-top: 5px;padding-bottom: 0px;font-size: 14px;color: black;text-align: left;opacity: 1;line-height: 1.5;"><div class="slideTitle" style="font-weight:bold;padding-bottom: 0px;">' + slideTitle + ' </div>' + slideBody + ' <div style="position:relative;bottom:0px;text-align:center;padding:0px;height:30px;background-color:white"><hr class="readLinkLine" style="padding:0px"><a class="readLink" href="' + storyUrl + '" style="color: #144899;text-decoration: none;padding: 0px;padding-bottom: 10px;font-size: 15px;font-weight: bold;">Read at Stacker</a></div> </div>'
 
 		return render_template("storyPreview.html", data=previewHTML)
 

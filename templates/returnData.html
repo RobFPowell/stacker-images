@@ -9,6 +9,13 @@ img.addBorder {
 	border-style: solid;
 	border-color: blue;
 }
+.column {
+	float: left;
+	/*padding-right: 50px;*/
+}
+.flagImage {
+	background-color: #ffb3b3;
+}
 </style>
 </head>
 
@@ -16,16 +23,24 @@ img.addBorder {
 <h1><a href='/'>Stacker Images</a></h1>
 <br>
 
-<div display="inline-block" width="600px">
-	{% for col1, col2, col3 in data %}
-	  <div id="{{ col3 }}">{{ col1 }}</div>
-	{% endfor %}
+<div width="100%">
+	<div display="inline-block" class="column" style="width:125px;">
+		{% for col1, col2, col3, col4, col5 in data %}
+		  <div class="{{ col5 }}">{{ col4 }}</div>
+		{% endfor %}
+	</div>
+
+	<div display="inline-block" class="column">
+		{% for col1, col2, col3, col4, col5 in data %}
+		  <div id="{{ col3 }}" class="{{ col5 }}">{{ col1 }}</div>
+		{% endfor %}
+	</div>
 </div>
 
 <br>
 
-{% for col1, col2, col3 in data %}
-<tr>
+{% for col1, col2, col3, col4, col5 in data %}
+<tr class="{{ col5 }}">
   <td><img src="{{ col1 }}" width="49%" imageCount="{{ col3 }}" class="{{ col3 }} addBorder" onclick="addLink(this)"></td>
   <td><img src="{{ col2 }}" width="49%" imageCount="{{ col3 }}" class="{{ col3 }}" onclick="addLink(this)"></td>
 </tr>
