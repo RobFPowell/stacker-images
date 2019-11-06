@@ -43,14 +43,22 @@ def csvRead():
 		rowCount = 0
 		for row in csv_input:
 			if rowCount > 0:
-				if len(row[0]) > 0:
-					editUpload(row[0], imageList, croppedImages, imageCountList, imageCount, imageSizes, imageClasses)
+				if len(row) > 0:
+					if len(row[0]) > 0:
+						editUpload(row[0], imageList, croppedImages, imageCountList, imageCount, imageSizes, imageClasses)
+					else:
+						imageList.append("No image")
+						croppedImages.append("No image")
+						imageCountList.append(imageCountList[-1]+1)
+						imageSizes.append('No image')
+						imageClasses.append('flagImage')
 				else:
 					imageList.append("No image")
 					croppedImages.append("No image")
 					imageCountList.append(imageCountList[-1]+1)
 					imageSizes.append('No image')
 					imageClasses.append('flagImage')
+
 			rowCount += 1
 
 		imageCountList.pop(0)
@@ -112,7 +120,8 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount, 
 			Body=tempImage.getvalue(),
 			Bucket=bucket_name,
 			Key='cropped'+filename,
-			ACL='public-read'
+			ACL='public-read',
+			ContentType='image'
 		)
 		fileUrl = 'https://s3.amazonaws.com/stacker-images/' + 'cropped' + filename
 		print fileUrl
@@ -152,10 +161,11 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount, 
 		s3.put_object(
 			Body=blurred1.getvalue(),
 			Bucket=bucket_name,
-			Key=filename,
-			ACL='public-read'
+			Key='edited' + filename,
+			ACL='public-read',
+			ContentType='image'
 		)
-		fileUrl = 'https://s3.amazonaws.com/stacker-images/' + filename
+		fileUrl = 'https://s3.amazonaws.com/stacker-images/' + 'edited' + filename
 		print fileUrl
 		imageList.append(fileUrl)
 		imageCountList.append(imageCountList[-1]+1)
@@ -197,7 +207,8 @@ def hostImages():
 				Body=blurred1.getvalue(),
 				Bucket=bucket_name,
 				Key=fileKeyRandom,
-				ACL='public-read'
+				ACL='public-read',
+				ContentType='image'
 			)
 
 			imageList.append('https://s3.amazonaws.com/stacker-images/' + fileKeyRandom)
