@@ -95,17 +95,35 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount, 
 		else:
 			imageClass = ''
 
-		if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]):
-			newHeightTall = int((1080 / float(imCrop.size[0])) * float(imCrop.size[1]))
-			crop = int((newHeightTall - 770)/2)
-			imCrop = imCrop.resize((1080, newHeightTall))
-			newIm = imCrop.crop((0,crop,1080,newHeightTall - crop))
+		if (800 > imCrop.size[0]) or (570 > imCrop.size[1]):
+			newIm = imCrop.filter(ImageFilter.GaussianBlur(200))
+			newIm = newIm.resize((800, 570))
+			offset = (int((newIm.size[0] - imCrop.size[0]) // 2), int((newIm.size[1] - imCrop.size[1]) // 2))
+			newIm.paste(imCrop, offset)
+		# crop to max dimensions, no resizing
+		# elif (4000 < imCrop.size[0]) and (2857 < imCrop.size[1]):
+		# 	newIm = imCrop.crop((int((imCrop.size[0] - 3997) // 2), int((imCrop.size[1] - 2850) // 2), imCrop.size[0] - int((imCrop.size[0] - 3997) // 2), imCrop.size[1] - int((imCrop.size[1] - 2850) // 2)))
+		elif (4000 < imCrop.size[0]) and (2857 < imCrop.size[1]):
+			if (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]) or ((imCrop.size[1] * (1080.0 / 770.0)) > imCrop.size[0]):
+				newHeightTall = int((3997 / float(imCrop.size[0])) * float(imCrop.size[1]))
+				crop = int((newHeightTall - 2850)/2)
+				imCrop = imCrop.resize((3997, newHeightTall))
+				newIm = imCrop.crop((0,crop,3997,newHeightTall - crop))
+			else:
+				newWideWidth = int((2850 / float(imCrop.size[1])) * float(imCrop.size[0]))
+				crop = int((newWideWidth - 3997)/2)
+				imCrop = imCrop.resize((newWideWidth, 2850))
+				newIm = imCrop.crop((crop,0,newWideWidth - crop,2850))
+		elif (imCrop.size[1] > imCrop.size[0]) or (imCrop.size[1] == imCrop.size[0]) or ((imCrop.size[1] * (1080.0 / 770.0)) > imCrop.size[0]):
+			newHeightTall = int(float(imCrop.size[0]) * float(770.0 / 1080.0))
+			crop = int((imCrop.size[1] - newHeightTall) / 2)
+			newIm = imCrop.crop((0,crop,imCrop.size[0],imCrop.size[1] - crop))
 		else:
-			newWideWidth = int((770 / float(imCrop.size[1])) * float(imCrop.size[0]))
-			crop = int((newWideWidth - 1080)/2)
-			imCrop = imCrop.resize((newWideWidth, 770))
-			newIm = imCrop.crop((crop,0,newWideWidth - crop,770))
+			newWideWidth = int(float(imCrop.size[1]) * float(1080.0 / 770.0))
+			crop = int((imCrop.size[0] - newWideWidth) / 2)
+			newIm = imCrop.crop((crop,0,imCrop.size[0] - crop,imCrop.size[1]))
 
+		print newIm.size[0], newIm.size[1]
 		quality = 95
 		tempImage = StringIO()
 		if imageFormat == 'PNG':
@@ -131,26 +149,37 @@ def editUpload (imageUrl, imageList, croppedImages, imageCountList, imageCount, 
 
 		im = Image.open(response)
 		blurred = im.filter(ImageFilter.GaussianBlur(200))
-		blurred = blurred.resize((1080, 770))
 
-		if im.size[0] == im.size[1]:
-			newWidth = 770
-			newHeight = 770
-			im = im.resize((newWidth,newHeight))
-			offset = (int((blurred.size[0] - newWidth) // 2), 0)
-		elif im.size[0] < im.size[1]:
-			newWidth = (770 / float(im.size[1])) * float(im.size[0])
-			newHeight = 770
-			im = im.resize((int(newWidth),newHeight))
-			offset = (int((blurred.size[0] - int(newWidth)) // 2), 0)
+		if (800 > im.size[0]) or (570 > im.size[1]):
+			blurred = blurred.resize((800, 570))
+			offset = (int((blurred.size[0] - im.size[0]) // 2), int((blurred.size[1] - im.size[1]) // 2))
+		elif (4000 < im.size[0]) or (2857 < im.size[1]):
+			blurred = blurred.resize((3997,2850))
+			if im.size[0] == im.size[1]:
+				newWidth = 2850
+				newHeight = 2850
+				im = im.resize((newWidth,newHeight))
+				offset = (int((blurred.size[0] - newWidth) // 2), 0)
+			elif im.size[0] < im.size[1]:
+				newWidth = (2850 / float(im.size[1])) * float(im.size[0])
+				newHeight = 2850
+				im = im.resize((int(newWidth),newHeight))
+				offset = (int((blurred.size[0] - int(newWidth)) // 2), 0)
+			else:
+				newWidth = 3997
+				newHeight = (3997 / float(im.size[0])) * float(im.size[1])
+				im = im.resize((newWidth,int(newHeight)))
+				offset = (0, int((blurred.size[1] - int(newHeight)) // 2))
+		elif (im.size[1] > im.size[0]) or (im.size[1] == im.size[0]) or ((im.size[1] * (1080.0 / 770.0)) > im.size[0]): #https://upload.wikimedia.org/wikipedia/commons/8/82/Casey_Farm_Rhode_Island.jpg
+			blurred = blurred.resize((int(im.size[1] * float(1080.0 / 770.0)), im.size[1]))
+			offset = (int((blurred.size[0] - im.size[0]) // 2), 0)
 		else:
-			newWidth = 1080
-			newHeight = (1080 / float(im.size[0])) * float(im.size[1])
-			im = im.resize((newWidth,int(newHeight)))
-			offset = (0, int((blurred.size[1] - int(newHeight)) // 2))
+			blurred = blurred.resize((im.size[0], int(im.size[0] / float(1080.0 / 770.0))))
+			offset = (0, int((blurred.size[1] - im.size[1]) // 2))
 
 		blurred.paste(im, offset)
 		blurred1 = StringIO()
+		print blurred.size[0], blurred.size[1]
 		if imageFormat == 'PNG':
 			blurred.save(blurred1, 'png', quality=quality)
 		else:
