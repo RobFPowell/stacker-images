@@ -267,3 +267,43 @@ def storyPreview():
 
 		return render_template("storyPreview.html", data=previewHTML)
 
+@app.route('/storyHTML', methods=['GET', 'POST'])
+def storyHTML():
+	if request.method == 'POST':
+		storyID = request.form['enterID']
+		select = request.form.get('noImages')
+		print select
+		if select == "No images":
+			r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID, headers={'User-Agent': 'Mozilla/5.0'})
+			storySoup = BeautifulSoup(r.text)
+			allSlides = storySoup.find_all('media:content')
+			storyOutput = ""
+			print allSlides[1].find('media:title')
+			for slide in allSlides:
+				slideTitle = slide.find('media:title').text
+				slideBody = slide.find('media:text').text
+				storyOutput = storyOutput + "<h2>" + slideTitle + "</h2>" + slideBody
+			testArray = storySoup.find('item').children
+			# for each in testArray:
+			# 	print each
+			storyLink = str(storySoup.find('link'))
+			storyLink = storySoup.find('dcterms:modified').nextSibling.nextSibling
+			print storyLink
+			storyAuthor = storySoup.find('author').text
+			storyOutput = "<p>Story name: " + allSlides[1].find('media:title').text + "<br>Story link: " + storyLink + "<br>Author: " + storyAuthor + "</p>" + storyOutput
+		else:
+			r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID + '?_format=frankly_xml', headers={'User-Agent': 'Mozilla/5.0'})
+			storySoup = BeautifulSoup(r.text)
+			storyName = storySoup.find('item').find('title').text
+			print storyName
+			storyLink = storySoup.find('dcterms:modified').nextSibling.nextSibling.nextSibling
+			print storyLink
+			storyContent = storySoup.find('content:encoded').text
+			storyAuthor = storySoup.find('author').text
+			storyOutput = "<p>Story name: "+storyName+"<br>Story link: "+storyLink+"<br>Author: "+storyAuthor+"</p>"+storyContent
+			print storyLink
+
+		# with open('test.txt', "w") as test:
+		# 	test.write(storyOutput.encode('utf-8'))
+		return render_template("storyHTML.html", data=storyOutput)
+

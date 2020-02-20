@@ -34,7 +34,7 @@ h1, h2, h3 {
 		To edit a list of images URLs:<br>
         <li>1. Click "Choose FIle" and select a CSV with list of images in the first column. The first cell can be a header (it gets skipped). Here's a link to an example image CSV.</li>
         <li>2. Click "Submit"</li>
-        <li>2. The Image Editor will take each image URL and produce two 1080(W) x 770(H) image formats:</li>
+        <li>2. The Image Editor will take each image URL and produce two images ranging from 800x570 to 4000x2857:</li>
             <li> (a) one scaled to fit the full image in the frame, adding blurred padding where necessary</li>
             <li>(b) one scaled to fill the entire frame with the image, cropping the picture where necessary</li>
         <li>3. The Image Editor defaults to producing a list of the URLs in format A (blurred padding added). To select another format for an image, click the image preview (the selected image will highlight in blue).</li>
@@ -70,5 +70,13 @@ h1, h2, h3 {
 		<input type="text" name="enterUrl" placeholder="Enter URL w/ slide #" id="urlInput">
 		<input type="submit" value="Submit">
 	</form>
+	<br>
+	<h3>Story HTML Generator:</h3>
+	<form action="/storyHTML" method="POST">
+		<input type="text" name="enterID" placeholder="Enter story ID" id="idInput">
+		<input type="submit" value="Submit"><br>
+		<input type="checkbox" id="noImages" name="noImages" value="No images">No images
+	</form>
+	<br>
 </body>
 </html>
