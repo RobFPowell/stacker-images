@@ -32,7 +32,7 @@ img.addBorder {
 
 	<div display="inline-block">
 		{% for col1, col2, col3, col4, col5 in data %}
-		  <div id="{{ col3 }}" class="{{ col5 }}">{{ col1 }}</div>
+		  <div id="{{ col3 }}" class="{{ col5 }}">{{ col2 }}</div>
 		{% endfor %}
 	</div>
 </div>
@@ -41,8 +41,8 @@ img.addBorder {
 
 {% for col1, col2, col3, col4, col5 in data %}
 <tr class="{{ col5 }}">
-  <td><img src="{{ col1 }}" width="49%" imageCount="{{ col3 }}" class="{{ col3 }} addBorder" onclick="addLink(this)"></td>
-  <td><img src="{{ col2 }}" width="49%" imageCount="{{ col3 }}" class="{{ col3 }}" onclick="addLink(this)"></td>
+  <td><img src="{{ col1 }}" width="49%" imageCount="{{ col3 }}" class="{{ col3 }}" onclick="addLink(this)"></td>
+  <td><img src="{{ col2 }}" width="49%" imageCount="{{ col3 }}" class="{{ col3 }} addBorder" onclick="addLink(this)"></td>
 </tr>
 {% endfor %}
 
