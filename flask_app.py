@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, Response
 from flask import render_template
 
 import PIL
@@ -310,3 +310,11 @@ def storyHTML():
 @app.route('/getStory')
 def getStory(name=None):
     return render_template('getStory.html', name=name)
+
+@app.route('/getTextFile', methods=['GET', 'POST'])
+def getTextFile(name=None):
+    storyText = request.form['textFileContent']
+    return Response(
+        storyText,
+        mimetype="text",
+        headers={"Content-disposition": "attachment; filename=story.txt"})
