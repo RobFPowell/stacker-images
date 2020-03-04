@@ -10,7 +10,16 @@ body{font-family: 'Fontawesome','Overpass',sans-serif,arial;}
 <body>
 <h1><a href='/'>Stacker Images</a></h1>
 <p><a href="/getStory">Get another story</a></p>
-<form action="getTextFile" method="POST" ><button type="submit" name="textFileContent" value="{{  data  }}">Download text file</button></form>
+
+<p>
+    Story name: {{ storyName }}<br>
+    Link: {{ storyLink }}<br>
+    Author: {{ storyAuthor }}
+</p>
+<form action="getTextFile" method="POST" >
+    <button type="submit" name="textFileContent" value="{{  data  }}">Download text file</button>
+    <input type="hidden" name="storyID" value="{{ storyID }}" />
+</form>
 <p>Paste story html <a href="http://htmlpreview.discoverypark.info/">here</a> to test
 <div display="inline-block" width="600px">
 	{{ data }}

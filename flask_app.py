@@ -305,7 +305,7 @@ def storyHTML():
 
 		# with open('test.txt', "w") as test:
 		# 	test.write(storyOutput.encode('utf-8'))
-		return render_template("storyHTML.html", data=storyOutput)
+		return render_template("storyHTML.html", data=storyOutput, storyID=storyID, storyName=storyName, storyLink=storyLink, storyAuthor=storyAuthor)
 
 @app.route('/getStory')
 def getStory(name=None):
@@ -314,7 +314,8 @@ def getStory(name=None):
 @app.route('/getTextFile', methods=['GET', 'POST'])
 def getTextFile(name=None):
     storyText = request.form['textFileContent']
+    storyID = request.form['storyID']
     return Response(
         storyText,
         mimetype="text",
-        headers={"Content-disposition": "attachment; filename=story.txt"})
+        headers={"Content-disposition": "attachment; filename=" + storyID + ".txt"})
