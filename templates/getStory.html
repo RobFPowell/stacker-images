@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>PhotoStack</title>
+<link rel="shortcut icon" href="https://thestacker.com/sites/default/files/favicon_0.ico" type="image/vnd.microsoft.icon">
+<style type="text/css">
+body{font-family: 'Fontawesome','Overpass',sans-serif,arial;}
+</style>
+</head>
+
+<body>
+<h1><a href='/'>Stacker Images</a></h1>
+
+<h3>Story HTML Generator:</h3>
+<form action="/storyHTML" method="POST">
+	<input type="text" name="enterID" placeholder="Enter story ID" id="idInput">
+	<input type="submit" value="Submit"><br>
+	<input type="checkbox" id="noImages" name="noImages" value="No images">No images
+</form>
+
+<p>
+    Story IDs can be found in the URL<br>
+    Ex. https://thestacker.com/stories/<b>3881</b>/cost-gold-year-you-were-born
+</p>
+
+</body>
+</html>

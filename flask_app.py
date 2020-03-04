@@ -307,3 +307,6 @@ def storyHTML():
 		# 	test.write(storyOutput.encode('utf-8'))
 		return render_template("storyHTML.html", data=storyOutput)
 
+@app.route('/getStory')
+def getStory(name=None):
+    return render_template('getStory.html', name=name)
