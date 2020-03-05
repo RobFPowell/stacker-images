@@ -15,6 +15,7 @@ import re
 from bs4 import BeautifulSoup
 import string
 import random
+import mammoth
 
 app = Flask(__name__)
 s3 = boto3.client('s3')
@@ -284,6 +285,7 @@ def storyHTML():
 				slideBody = str(slide.find('media:text').contents).replace(", u'\\n', ","").replace("\\r\\n\\r\\n', ","").replace("', <br/>, u'\\r\\n","<br/>").replace(", u'\\r\\n]]>']","").replace("[u'","").replace('[u"',"").replace('\\r\\n\\r\\n",',"")
 				storyOutput = storyOutput + "<h2>" + slideTitle + "</h2>" + slideBody
 			testArray = storySoup.find('item').children
+                        storyName = allSlides[0].find('media:title').text
 			# for each in testArray:
 			# 	print each
 			storyLink = str(storySoup.find('link'))
@@ -294,11 +296,12 @@ def storyHTML():
 		else:
 			r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID + '?_format=frankly_xml', headers={'User-Agent': 'Mozilla/5.0'})
 			storySoup = BeautifulSoup(r.text)
-			storyName = storySoup.find('item').find('title').text
+			storyName = storySoup.find('item').find('title').text.encode('utf-8')
 			print storyName
 			storyLink = storySoup.find('dcterms:modified').nextSibling.nextSibling.nextSibling
 			print storyLink
-			storyContent = unicode(storySoup.find('content:encoded').contents).replace(", u'\\n', ","").replace("\\r\\n","")
+                        #storyContent = str(storySoup.find('content:encoded').contents).encode('utf-8')
+			storyContent = unicode(storySoup.find('content:encoded').contents).replace(", u'\\n', ","").replace("\\r\\n","").replace("\\u2018","").replace("\\u2019","").replace("\\xa0"," ").replace("\\u2014", "-").replace("\\u201c",'"').replace("\\u201d",'"').replace("[u'\\n'","").replace(", u']]>']","").replace("\\xe9","e").replace("\\xf6","o")
 			storyAuthor = storySoup.find('author').text
 			storyOutput = "<p>Story name: "+storyName+"<br>Story link: "+storyLink+"<br>Author: "+storyAuthor+"</p>"+storyContent
 			print storyLink
@@ -319,3 +322,17 @@ def getTextFile(name=None):
         storyText,
         mimetype="text",
         headers={"Content-disposition": "attachment; filename=" + storyID + ".txt"})
+
+@app.route('/wordToHTML', methods=['POST'])
+def wordToHTML():
+    wordDoc = request.files['wordDoc']
+    #stream = io.StringIO(wordDoc.stream.read().decode("UTF8"), newline=None)
+    mammothIt = mammoth.convert_to_html(wordDoc)
+    replaceHTML = mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>')
+    return render_template("storyPreview.html", data=replaceHTML)
+    return Response(
+        mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>'),
+        mimetype="text",
+        headers={"Content-disposition": "attachment; filename=story.txt"})  
+    #print mammothIt.value
+    #print mammothIt.messages
