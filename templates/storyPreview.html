@@ -9,7 +9,12 @@ body{font-family: 'Fontawesome','Overpass',sans-serif,arial;}
 
 <body>
 <h1><a href='/'>Stacker Images</a></h1>
-
+<input type=button value="Copy to Clipboard" onClick="copytable('slideTable')">
+<table id='slideTable'>
+    {% for slideTitles, slideBody in storyTable%}
+        <tr><td>{{ slideTitles  }}</td><td>{{ slideBody  }}</td></tr>
+    {% endfor %}
+</table>
 <div display="inline-block" width="600px">
 	{{ data }}
 </div>
@@ -19,4 +24,17 @@ body{font-family: 'Fontawesome','Overpass',sans-serif,arial;}
 </div>
 
 </body>
+
+<script type="text/javascript">
+
+function copytable(el) {
+    var urlField = document.getElementById(el)   
+    var range = document.createRange()
+    range.selectNode(urlField)
+    window.getSelection().addRange(range) 
+    document.execCommand('copy')
+}
+
+</script>
+
 </html>

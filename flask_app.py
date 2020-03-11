@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 import string
 import random
 import mammoth
+from iptcinfo import IPTCInfo
 
 app = Flask(__name__)
 s3 = boto3.client('s3')
@@ -268,6 +269,31 @@ def storyPreview():
 
 		return render_template("storyPreview.html", data=previewHTML)
 
+@app.route('/imageData', methods=['GET','POST'])
+def imageData():
+    r = requests.get('https://thestacker.com/api/v1/slideshow/' + '3929', headers={'User-Agent': 'Mozilla/5.0'})
+    storySoup = BeautifulSoup(r.text)
+    allSlides = storySoup.find_all('media:content')
+    print allSlides[0]['url']
+    slideCount = 0
+    for slide in allSlides:
+        imageUrl = slide['url']
+        response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
+        #im = Image.open(response)
+        #print im.size
+        info = IPTCInfo(response)
+        slideTitle = slide.find('media:title').text
+        info['title'] = slideTitle
+        slideBody = str(slide.find('media:text').contents).replace(", u'\\n', ","").replace("\\r\\n\\r\\n', ","")
+        info['description'] = slideBody
+        info.save()
+        #return Response(im,mimetype='image')
+        slideCount += 1
+        return Response(
+            response,
+            mimetype="image",
+            headers={"Content-disposition": "attachment; filename=" + slideCount + ".jpg"})  
+
 @app.route('/storyHTML', methods=['GET', 'POST'])
 def storyHTML():
 	if request.method == 'POST':
@@ -284,10 +310,7 @@ def storyHTML():
 				slideTitle = slide.find('media:title').text
 				slideBody = str(slide.find('media:text').contents).replace(", u'\\n', ","").replace("\\r\\n\\r\\n', ","").replace("', <br/>, u'\\r\\n","<br/>").replace(", u'\\r\\n]]>']","").replace("[u'","").replace('[u"',"").replace('\\r\\n\\r\\n",',"")
 				storyOutput = storyOutput + "<h2>" + slideTitle + "</h2>" + slideBody
-			testArray = storySoup.find('item').children
                         storyName = allSlides[0].find('media:title').text
-			# for each in testArray:
-			# 	print each
 			storyLink = str(storySoup.find('link'))
 			storyLink = storySoup.find('dcterms:modified').nextSibling.nextSibling
 			print storyLink
@@ -326,13 +349,17 @@ def getTextFile(name=None):
 @app.route('/wordToHTML', methods=['POST'])
 def wordToHTML():
     wordDoc = request.files['wordDoc']
-    #stream = io.StringIO(wordDoc.stream.read().decode("UTF8"), newline=None)
     mammothIt = mammoth.convert_to_html(wordDoc)
-    replaceHTML = mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>')
-    return render_template("storyPreview.html", data=replaceHTML)
+    replaceHTML = mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>').replace('&quot;','"')
+    splitSlides = replaceHTML.split('(---')
+    slideTable = []
+    for slide in splitSlides:
+        slideTable.append(slide[slide.find('---)')+4:])
+    slideTitles = slideTable[1::2]
+    slideBody = slideTable[2::2]
+    storyTable = zip(slideTitles, slideBody)
+    return render_template("storyPreview.html", data=replaceHTML, storyTable=storyTable)
     return Response(
         mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>'),
         mimetype="text",
         headers={"Content-disposition": "attachment; filename=story.txt"})  
-    #print mammothIt.value
-    #print mammothIt.messages
