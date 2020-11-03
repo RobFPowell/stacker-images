@@ -279,9 +279,9 @@ def imageData():
     for slide in allSlides:
         imageUrl = slide['url']
         response = requests.get(imageUrl, stream=True, headers={'User-Agent': 'Mozilla/5.0'}).raw
-        #im = Image.open(response)
+        im = response
         #print im.size
-        info = IPTCInfo(response)
+        info = IPTCInfo(im)
         slideTitle = slide.find('media:title').text
         info['title'] = slideTitle
         slideBody = str(slide.find('media:text').contents).replace(", u'\\n', ","").replace("\\r\\n\\r\\n', ","")
@@ -317,17 +317,33 @@ def storyHTML():
 			storyAuthor = storySoup.find('author').text
 			storyOutput = "<p>Story name: " + allSlides[0].find('media:title').text + "<br>Story link: " + storyLink + "<br>Author: " + storyAuthor + "</p>" + storyOutput
 		else:
-			r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID + '?_format=frankly_xml', headers={'User-Agent': 'Mozilla/5.0'})
+	    	        # Scrape main feed with images
+                        #r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID, headers={'User-Agent': 'Mozilla/5.0'})
+                        #storySoup = BeautifulSoup(r.text)
+                        #allSlides = storySoup.find_all('media:content')
+                        #storyName = allSlides[0].find('media:title').text
+                        #storyLink = storySoup.find('dcterms:modified').nextSibling.nextSibling
+                        #storyAuthor = storySoup.find('author').text
+                        #storyOutput = ""
+                        #for slide in allSlides:
+                        #    slideTitle = slide.find('media:title').text
+                        #    slideImage = slide['url']
+                        #    slideAttribution = slide.find('media:credit').text
+                        #    slideBody = str(slide.find('media:text').contents).replace(", u'\\n', ","").replace("\\r\\n","").replace("\\u2018","").replace("\\u2019","").replace("\\xa0"," ").replace("\\u2014", "-").replace("\\u201c",'"').replace("\\u201d",'"').replace("[u'\\n'","").replace(", u']]>']","").replace("\\xe9","e").replace("\\xf6","o").replace("]]>","")
+                        #    storyOutput = storyOutput + "<br><img src='" + slideImage + "'>" + "<h5>" + slideAttribution + "</h5>" + "<h2>" + slideTitle + "</h2>" + slideBody
+                        #storyOutput = "<p>Story name: " + allSlides[0].find('media:title').text + "<br>Story link: " + storyLink + "<br>Author: " + storyAuthor + "</p>" + storyOutput
+                        
+                        #Scrape single page feed with images
+                        r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID + '?_format=single_item_xml', headers={'User-Agent': 'Mozilla/5.0'})
 			storySoup = BeautifulSoup(r.text)
 			storyName = storySoup.find('item').find('title').text.encode('utf-8')
-			print storyName
 			storyLink = storySoup.find('dcterms:modified').nextSibling.nextSibling.nextSibling
-			print storyLink
-                        #storyContent = str(storySoup.find('content:encoded').contents).encode('utf-8')
-			storyContent = unicode(storySoup.find('content:encoded').contents).replace(", u'\\n', ","").replace("\\r\\n","").replace("\\u2018","").replace("\\u2019","").replace("\\xa0"," ").replace("\\u2014", "-").replace("\\u201c",'"').replace("\\u201d",'"').replace("[u'\\n'","").replace(", u']]>']","").replace("\\xe9","e").replace("\\xf6","o")
+                        storyContent = str(storySoup.find('content:encoded').contents).encode('ascii', 'ignore')
+                        #storyContent = unicode(storySoup.find('content:encoded').contents).replace(", u'\\n', ","").replace("\\r\\n","").replace("\\u2018","").replace("\\u2019","").replace("\\xa0"," ").replace("\\u2014", "-").replace("\\u201c",'"').replace("\\u201d",'"').replace("[u'\\n'","").replace(", u']]>']","").replace("\\xe9","e").replace("\\xf6","o")
 			storyAuthor = storySoup.find('author').text
-			storyOutput = "<p>Story name: "+storyName+"<br>Story link: "+storyLink+"<br>Author: "+storyAuthor+"</p>"+storyContent
-			print storyLink
+                        storyLeadImage = storySoup.find('media:content')['url'].rsplit('/',1)
+                        storyLeadImage = "https://thestacker.com/sites/default/files/" + storyLeadImage[1]
+                        storyOutput = "<p>Story name: "+storyName+"<br>Story link: "+storyLink+"<br>Author: "+storyAuthor+"</p>"+ "<img src='" + storyLeadImage +"'>"+storyContent
 
 		# with open('test.txt', "w") as test:
 		# 	test.write(storyOutput.encode('utf-8'))
@@ -350,7 +366,7 @@ def getTextFile(name=None):
 def wordToHTML():
     wordDoc = request.files['wordDoc']
     mammothIt = mammoth.convert_to_html(wordDoc)
-    replaceHTML = mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>').replace('&quot;','"')
+    replaceHTML = mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>').replace('&quot;','"').replace('&amp;','&')
     splitSlides = replaceHTML.split('(---')
     slideTable = []
     for slide in splitSlides:
@@ -360,6 +376,52 @@ def wordToHTML():
     storyTable = zip(slideTitles, slideBody)
     return render_template("storyPreview.html", data=replaceHTML, storyTable=storyTable)
     return Response(
-        mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>'),
+        mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>').replace('&amp;','&'),
         mimetype="text",
-        headers={"Content-disposition": "attachment; filename=story.txt"})  
+        headers={"Content-disposition": "attachment; filename=story.txt"}) 
+
+@app.route('/linkChecker', methods=['POST'])
+def linkChecker():
+    if request.method == 'POST':
+        wordRequest = BeautifulSoup(requests.get('https://docs.google.com/spreadsheets/d/e/2PACX-1vRylbIXrAv6MvlqnheFdGx64jLuno90gH4GJkszDB5_cwZJsV-9lFj76BbXi3LbYwoCY4OyyYCTVbVQ/pubhtml?gid=0&single=true').text)
+        words = wordRequest.find_all('td')
+
+        noNoWords = []
+
+        for word in words:
+            noNoWords.append(str(word.text))
+    
+        print noNoWords
+
+        slideList = []
+        slideBodyList = []
+        linkList = []
+
+        #storyId = '1587'
+        storyId = request.form['enterIDLink']
+        print storyId
+        r = requests.get('https://stacker.com/api/v1/slideshow/' + str(storyId), headers={'User-Agent': 'Mozilla/5.0'})
+        feedSoup = BeautifulSoup(r.text)
+        allStories = feedSoup.find_all('item')
+        for storySoup in allStories:
+            allSlides = storySoup.find_all('media:content')
+            try:
+                storyName = storySoup.find('media:content').find('media:title').text.encode("utf8")
+            except:
+                storyName = 'Error'
+
+            slideCount = 0
+            for slide in allSlides:
+                slideTitle = slide.find('media:title').text.replace(", u'\\n', ","").replace("\\r\\n","").replace("\\u2018","").replace("\\u2019","").replace("\\xa0"," ").replace("\\u2014", "-").replace("\\u201c",'"').replace("\\u201d",'"').replace("[u'\\n'","").replace(", u']]>']","").replace("\\xe9","e").replace("\\xf6","o").encode("utf8")
+                slideBody = str(slide.find('media:text').contents).encode("utf8")
+                for word in noNoWords:
+                    if word in slideBody:
+                    #print storyName, "|", slideCount, "|", word, "|", slideBody
+                        slideList.append(slideTitle)
+                        slideBodyList.append(slideBody)
+                        linkList.append(word)
+
+                slideCount = slideCount + 1
+            columnValues = zip(slideList,linkList,slideBodyList)
+            return render_template("returnLinks.html", data=columnValues)
+
