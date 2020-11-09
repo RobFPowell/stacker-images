@@ -383,23 +383,24 @@ def wordToHTML():
 @app.route('/linkChecker', methods=['POST'])
 def linkChecker():
     if request.method == 'POST':
+        storyId = request.form['enterIDLink'].split(',')[0]
+        partnerName = request.form['enterIDLink'].split(',')[1].strip()
         wordRequest = BeautifulSoup(requests.get('https://docs.google.com/spreadsheets/d/e/2PACX-1vRylbIXrAv6MvlqnheFdGx64jLuno90gH4GJkszDB5_cwZJsV-9lFj76BbXi3LbYwoCY4OyyYCTVbVQ/pubhtml?gid=0&single=true').text)
-        words = wordRequest.find_all('td')
+        wordRows = wordRequest.find_all('tr')
 
         noNoWords = []
 
-        for word in words:
-            noNoWords.append(str(word.text))
+        for wordRow in wordRows:
+            try:
+                if partnerName == wordRow.find_all('td')[1].text:
+                    noNoWords.append(str(wordRow.find_all('td')[0].text))
+            except:
+                pass
     
-        print noNoWords
-
         slideList = []
         slideBodyList = []
         linkList = []
 
-        #storyId = '1587'
-        storyId = request.form['enterIDLink']
-        print storyId
         r = requests.get('https://stacker.com/api/v1/slideshow/' + str(storyId), headers={'User-Agent': 'Mozilla/5.0'})
         feedSoup = BeautifulSoup(r.text)
         allStories = feedSoup.find_all('item')

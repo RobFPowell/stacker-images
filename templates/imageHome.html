@@ -85,9 +85,15 @@ h1, h2, h3 {
 	</form>
     <br>
     <h3>Link Checker:</h3>
+    <p>
+        Check if links listed <a href="https://docs.google.com/spreadsheets/d/1P_S-exv2kbXx4o76vzy8thxi3n6_2kfre5sl5b2ydiA/edit#gid=0">here</a> are used in a story.<br>
+        Enter the story id and a partner name listed in the doc separated by a comma.
+    </p>
     <form action="/linkChecker" method="POST">
-        <input type="text" name="enterIDLink" placeholder="Enter story ID" id="idInputLink">
+        <input type="text" name="enterIDLink" placeholder="Enter story ID, partner name" id="idInputLink">
         <input type="submit" value="Submit"><br>
     </form>
+    <br>
+    <br>
 </body>
 </html>
