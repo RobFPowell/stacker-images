@@ -17,6 +17,9 @@ import string
 import random
 import mammoth
 from iptcinfo import IPTCInfo
+from pyvirtualdisplay import Display
+from selenium import webdriver
+import time
 
 app = Flask(__name__)
 s3 = boto3.client('s3')
@@ -292,7 +295,7 @@ def imageData():
         return Response(
             response,
             mimetype="image",
-            headers={"Content-disposition": "attachment; filename=" + slideCount + ".jpg"})  
+            headers={"Content-disposition": "attachment; filename=" + slideCount + ".jpg"})
 
 @app.route('/storyHTML', methods=['GET', 'POST'])
 def storyHTML():
@@ -332,7 +335,7 @@ def storyHTML():
                         #    slideBody = str(slide.find('media:text').contents).replace(", u'\\n', ","").replace("\\r\\n","").replace("\\u2018","").replace("\\u2019","").replace("\\xa0"," ").replace("\\u2014", "-").replace("\\u201c",'"').replace("\\u201d",'"').replace("[u'\\n'","").replace(", u']]>']","").replace("\\xe9","e").replace("\\xf6","o").replace("]]>","")
                         #    storyOutput = storyOutput + "<br><img src='" + slideImage + "'>" + "<h5>" + slideAttribution + "</h5>" + "<h2>" + slideTitle + "</h2>" + slideBody
                         #storyOutput = "<p>Story name: " + allSlides[0].find('media:title').text + "<br>Story link: " + storyLink + "<br>Author: " + storyAuthor + "</p>" + storyOutput
-                        
+
                         #Scrape single page feed with images
                         r = requests.get('https://thestacker.com/api/v1/slideshow/' + storyID + '?_format=single_item_xml', headers={'User-Agent': 'Mozilla/5.0'})
 			storySoup = BeautifulSoup(r.text)
@@ -378,7 +381,7 @@ def wordToHTML():
     return Response(
         mammothIt.value.replace('</p><p>-','<br>-').replace('</p><p>---','<br>---').replace('<p>(---','(---').replace('---)</p>','---)').replace('---)<br>','---)<p>').replace('&amp;','&'),
         mimetype="text",
-        headers={"Content-disposition": "attachment; filename=story.txt"}) 
+        headers={"Content-disposition": "attachment; filename=story.txt"})
 
 @app.route('/linkChecker', methods=['POST'])
 def linkChecker():
@@ -396,7 +399,7 @@ def linkChecker():
                     noNoWords.append(str(wordRow.find_all('td')[0].text))
             except:
                 pass
-    
+
         slideList = []
         slideBodyList = []
         linkList = []
@@ -425,4 +428,34 @@ def linkChecker():
                 slideCount = slideCount + 1
             columnValues = zip(slideList,linkList,slideBodyList)
             return render_template("returnLinks.html", data=columnValues)
+
+@app.route('/activeLinks', methods=['GET', 'POST'])
+def activeLinks():
+    if request.method == 'POST':
+        file = request.files['pic']
+        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        csv_input = csv.reader(stream)
+        textCheck = request.form['enterStoryString']
+        brokenLinks = []
+        activeLinks = []
+        rowCount = 0
+        with Display():
+            browser = webdriver.Firefox()
+            for row in csv_input:
+                if rowCount > 0:
+                    pageSource = requests.get(row[0], headers={'User-Agent': 'Mozilla/5.0'}).text
+                    if textCheck in pageSource:
+                        activeLinks.append(row[0])
+                    else:
+                            browser.get(row[0])
+                            time.sleep(5)
+                            pageSource = browser.page_source
+                            if textCheck in pageSource:
+                                activeLinks.append(row[0])
+                            else:
+                                brokenLinks.append(row[0])
+                                print row[0],'no'
+                rowCount = rowCount + 1
+            browser.quit()
+        return render_template("activeLinks.html", data=brokenLinks, dataActive=activeLinks)
 

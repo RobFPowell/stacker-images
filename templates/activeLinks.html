@@ -1,0 +1,25 @@
+<html>
+<head>
+<title>PhotoStack</title>
+<link rel="shortcut icon" href="https://thestacker.com/sites/default/files/favicon_0.ico" type="image/vnd.microsoft.icon">
+<style type="text/css">
+body{font-family: 'Fontawesome','Overpass',sans-serif,arial;}
+</style>
+</head>
+
+<body>
+<h1><a href='/'>Stacker Images</a></h1>
+<h2>Broken Links</h2>
+<table id='slideTable'>
+    {% for brokenLinks in data %}
+    <tr><td>{{ brokenLinks }}</td></tr>
+    {% endfor %}
+</table>
+<h2>Active Links</h2>
+<table>
+    {% for activeLinks in dataActive %}
+    <tr><td>{{ activeLinks }}</td></tr>
+    {% endfor %}
+</table>
+</body>
+</html>

@@ -95,5 +95,14 @@ h1, h2, h3 {
     </form>
     <br>
     <br>
+	<h3>Check for Active Links:</h3>
+	<p>Links should be in the first column, the first row is skipped</p>
+	<form action="/activeLinks" method="POST" enctype="multipart/form-data">
+		<input type="file" name="pic">
+        <input type="text" name="enterStoryString" placeholder="Enter text from story" id="enterStoryString">
+        <input type="submit">
+	</form>
+    <br>
+    <br>
 </body>
 </html>
